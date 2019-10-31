@@ -1,6 +1,7 @@
 # nopCommerce on AKS
 
-Execute create.sh
+Clone this project.
+Execute create.sh.
 
 ```bash
 ./create.sh
@@ -13,12 +14,12 @@ You editor confurations.
 
 ### VolumeClaim.yaml
 
-* Apply azure disk for SqlServer named mssql-data.
-* Apply azure file for nopCommerce named azurefile.
+* Apply azure disk for SqlServer named `mssql-data`.
+* Apply azure file for nopCommerce named `azurefile`.
 
 ### SqlServer2017.yaml
 
-* Deployment SqlServer2017 named `mssql` using persistent volume mssql-data.The default password at create.sh.
+* Deployment SqlServer2017 named `mssql-deployment` using persistent volume mssql-data.The default password at create.sh.
 * Create a `ClusterIP` type of service named `k8s-mssql` for k8s-mssql deployment
 
 ### redis.yaml
@@ -28,9 +29,14 @@ You editor confurations.
 
 ### nopcommerce.yaml
 
-* Deployment nopCommerce `deployment` named `nop`.
+* Deployment nopCommerce `deployment` named `nop-deployment`.
 * Create a `LoadBalancer` type of service named `nopservice` for nop deployment
 
 Now you can execute `kubectl get svc` to get ip for `nopservice`.Visit in ip to install nopCommerce.
 
-You can scale the nop after the installation is complete.
+Notice:You must install it before you can scale the `nop deployment`.
+
+You can scale the `nop deployment` after the installation is complete.
+```bash
+kubectl scale deployment nop-deployment --replicas=5
+```
