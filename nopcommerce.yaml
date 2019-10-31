@@ -1,0 +1,97 @@
+#deployment
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: nop-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: nop
+    spec:
+      #终止宽限期
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: nop
+          image: nopcommerceteam/nopcommerce:4.20
+          ports:
+            - containerPort: 80
+          #覆盖启动命令
+          command: ["/bin/sh", "-c"]
+          args:
+            - echo starting;
+              touch /app/App_Data/sqlconf/dataSettings.json;
+              touch /app/App_Data/sqlconf/plugins.json;
+              rm -rf /app/appsettings.json;
+              ln -sf /app/App_Data/sqlconf/dataSettings.json /app/App_Data/dataSettings.json;
+              ln -sf /app/App_Data/sqlconf/plugins.json /app/App_Data/plugins.json;
+              ln -sf /app/config/nop-appsettings.json /app/appsettings.json;
+              if [ ! -d "/app/wwwroot/files/exportimport/" ];
+              then mkdir /app/wwwroot/files/exportimport;
+              fi;
+              dotnet Nop.Web.dll;
+              echo done;
+          #挂载
+          volumeMounts:
+            - name: nop-azurefile
+              mountPath: /app/wwwroot/bundles
+              subPath: nop/wwwroot/bundles
+            - name: nop-azurefile
+              mountPath: /app/wwwroot/files
+              subPath: nop/wwwroot/files
+            - name: nop-azurefile
+              mountPath: /app/wwwroot/images/thumbs
+              subPath: nop/wwwroot/images/thumbs
+            - name: nop-azurefile
+              mountPath: /app/wwwroot/images/uploaded
+              subPath: nop/wwwroot/images/uploaded
+            - name: nop-azurefile
+              mountPath: /app/App_Data/DataProtectionKeys
+              subPath: nop/App_Data/DataProtectionKeys
+            - name: nop-azurefile
+              mountPath: /app/App_Data/TempUploads
+              subPath: nop/App_Data/TempUploads
+            - name: nop-azurefile
+              mountPath: /app/App_Data/sqlconf
+              subPath: nop/App_Data/sqlconf
+            - name: appsettings
+              mountPath: /app/config
+          #资源
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "500Mi"
+            limits:
+              cpu: "2000m"
+              memory: "8Gi"
+          #探针
+          livenessProbe:
+            httpGet:
+              path: /KeepAlive/Index
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 3
+      #关联卷
+      volumes:
+        - name: nop-azurefile
+          persistentVolumeClaim:
+            claimName: azurefile
+        - name: appsettings
+          configMap:
+            defaultMode: 420
+            name: nop-appsettings
+---
+#svc
+apiVersion: v1
+kind: Service
+metadata:
+  name: nopservice
+spec:
+  selector:
+    app: nop
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: LoadBalancer
