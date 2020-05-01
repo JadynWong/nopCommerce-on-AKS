@@ -17,7 +17,7 @@ kubectl scale deployment nop-deployment --replicas=5
 ```
 ### Configurations
 
-You editor configurations.
+You can edit the following configurations.
 
 * redis.conf
 * nop-appsettings.json
