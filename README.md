@@ -15,9 +15,9 @@ You can scale the `nop deployment` after the installation is complete.
 ```bash
 kubectl scale deployment nop-deployment --replicas=5
 ```
-### Confurations
+### Configurations
 
-You editor confurations.
+You editor configurations.
 
 * redis.conf
 * nop-appsettings.json
