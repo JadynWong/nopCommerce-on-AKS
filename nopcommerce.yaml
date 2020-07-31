@@ -14,7 +14,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: nop
-          image: nopcommerceteam/nopcommerce:4.20
+          image: nopcommerceteam/nopcommerce:4.30
           ports:
             - containerPort: 80
           #覆盖启动命令
